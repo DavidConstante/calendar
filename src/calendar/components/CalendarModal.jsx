@@ -12,6 +12,10 @@ import 'react-datepicker/dist/react-datepicker.css'
 
 registerLocale('es', es)
 
+
+
+
+
 const customStyles = {
   content: {
     top: '50%',
@@ -75,7 +79,6 @@ export const CalendarModal = () => {
     }
 
     if (formValues.title.trim().length < 2) return
-
 
     console.log(formValues);
     //TODO: Close the modal
