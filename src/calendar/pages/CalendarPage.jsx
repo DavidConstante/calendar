@@ -13,8 +13,8 @@ const events = [
   {
     title: 'My event',
     notes: 'Some notes',
-    start: new Date(),
-    end: addHours(new Date(), 2),
+    start: addHours(new Date(), 2),
+    end: addHours(new Date(), 4),
     bgColor: '#fafafa',
     user: {
       _id: '123',
