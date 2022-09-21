@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { addHours, differenceInSeconds } from 'date-fns';
 
 import Swal from 'sweetalert2';
@@ -12,7 +12,7 @@ import 'react-datepicker/dist/react-datepicker.css'
 
 registerLocale('es', es)
 
-
+import { useCalendarStore, useUiStore } from '../../hooks';
 
 
 
@@ -31,21 +31,31 @@ Modal.setAppElement('#root');
 
 export const CalendarModal = () => {
 
-  const [isOpen, setIsOpen] = useState(true)
-  const [formSubmited, setFormSubmited] = useState(false)
+  const { isDateModalOpen, closeDateModal } = useUiStore()
+  const { activeEvent, startSavingEvent } = useCalendarStore()
+
+  const [formSubmitted, setFormSubmitted] = useState(false)
 
   const [formValues, setFormValues] = useState({
-    title: 'David',
-    notes: 'Constante',
+    title: '',
+    notes: '',
     start: addHours(new Date(), 2),
     end: addHours(new Date(), 4),
   })
 
   const titleClass = useMemo(() => {
-    if (!formSubmited) return ''
+    if (!formSubmitted) return ''
     return formValues.title.length > 4 ? 'is-valid' : 'is-invalid'
 
-  }, [formValues.title, formSubmited])
+  }, [formValues.title, formSubmitted])
+
+  useEffect(() => {
+    if (activeEvent !== null) {
+      setFormValues({ ...activeEvent })
+    }
+
+  }, [activeEvent])
+
 
   const onInputChange = ({ target }) => {
     setFormValues({
@@ -62,16 +72,15 @@ export const CalendarModal = () => {
   }
 
   const onCloseModal = () => {
-    console.log('close modal')
-    setIsOpen(false)
-
+    closeDateModal()
   }
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault()
-    setFormSubmited(true)
+    setFormSubmitted(true)
 
-    const difference = differenceInSeconds(formValues.end, formValues.start);
+    const difference = differenceInSeconds(formValues.end, formValues.start)
+
     if (isNaN(difference) || difference <= 0) {
       console.log('Error in dates');
       Swal.fire('Fechas incorrectas', 'La fecha de fin debe ser mayor a la de inicio', 'error')
@@ -81,7 +90,10 @@ export const CalendarModal = () => {
     if (formValues.title.trim().length < 2) return
 
     console.log(formValues);
-    //TODO: Close the modal
+
+    await startSavingEvent(formValues)
+    closeDateModal()
+    setFormSubmitted(false)
   }
 
   return (
@@ -89,7 +101,7 @@ export const CalendarModal = () => {
       className={'modal'}
       overlayClassName={'modal-fondo'}
       closeTimeoutMS={200}
-      isOpen={isOpen}
+      isOpen={isDateModalOpen}
       onRequestClose={onCloseModal}
       style={customStyles}
     >
